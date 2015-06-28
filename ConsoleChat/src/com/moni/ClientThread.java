@@ -32,7 +32,7 @@ class ClientThread extends Thread {
             os = new PrintStream(clientSocket.getOutputStream());
             os.println("Enter your name:");
             name = is.readLine().trim();
-            os.println("Hello " + name + "! To leave enter /end in a new line");
+            os.println("Hello " + name + "! To leave enter \"bye\" in a new line");
             threads.add(ClientThread.this);
             names.add(name);
             for (ClientThread thread: threads) {
@@ -42,21 +42,37 @@ class ClientThread extends Thread {
             }
             while (true) {
                 String line = is.readLine();
-                if (line.equals("/end")) {
+                if (line.equals("bye")) {
                     break;
                 }
-                    if (threads != null && names!=null) {
-                        String[] nm = line.split(":");
+                if (line.equals("list")) {
+                    this.os.println(names.toString());
+                } else if (threads != null && names!=null) {
+                    String[] nm = line.split(":");
+                    if (nm[0].equals("send_all")) {
+                        for (ClientThread thread : threads) {
+                            if (thread != null && thread != this) {
+                                thread.os.println("<" + name + "> " + nm[1]);
+
+                            }
+                        }
+                        this.os.println("Message successfully sent");
+                    }
+                    else if (!names.contains(nm[0])) {
+                        this.os.println("User" + nm[0] + " doesn't exists!");
+                    } else {
                         ClientThread thread2 = threads.get(names.indexOf(nm[0]));
                         thread2.os.println("<" + name + "> " + nm[1]);
+                        this.os.println("Message successfully sent");
                     }
                 }
-            } catch (IOException e1) {
+            }
+        } catch (IOException e1) {
             e1.printStackTrace();
         }
         for (ClientThread thread: threads) {
                 if (thread != null && thread != this) {
-                    thread.os.println(name + " is leaving the chat room :(");
+                    thread.os.println(name + " is leaving :(");
                 }
             }
             for (ClientThread thread: threads) {
