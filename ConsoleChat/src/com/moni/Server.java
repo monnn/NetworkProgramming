@@ -14,7 +14,7 @@ public class Server {
     private static ServerSocket serverSocket;
     private static Socket clientSocket;
     public static final int DEFAULT_PORT = 9001;
-    public static ArrayList<ClientThread> threads = new ArrayList<ClientThread>();
+    public static ArrayList<ClientHandler> threads = new ArrayList<ClientHandler>();
     public static ArrayList<String> names = new ArrayList<String>();
 
     public Server(int port) {
@@ -36,8 +36,8 @@ public class Server {
             try {
                 while (true) {
                     clientSocket = serverSocket.accept();
-                    ClientThread thread1 = new ClientThread(clientSocket, threads, names);
-                    thread1.start();
+                    ClientHandler handler = new ClientHandler(clientSocket, threads, names);
+                    handler.start();
                     break;
                 }
             } catch (IOException e) {
