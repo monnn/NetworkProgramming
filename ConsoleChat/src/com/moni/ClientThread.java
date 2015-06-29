@@ -32,6 +32,10 @@ class ClientThread extends Thread {
             os = new PrintStream(clientSocket.getOutputStream());
             os.println("Enter your name:");
             name = is.readLine().trim();
+            while (nameExists(name) == true)  {
+                os.println("User with name " + name + " already exists! Enter another name:");
+                name = is.readLine().trim();
+            }
             os.println("Hello " + name + "! To leave enter \"bye\" in a new line");
             threads.add(ClientThread.this);
             names.add(name);
@@ -47,19 +51,18 @@ class ClientThread extends Thread {
                 }
                 if (line.equals("list")) {
                     this.os.println(names.toString());
-                } else if (threads != null && names!=null) {
+                } else if (threads != null && names != null) {
                     String[] nm = line.split(":");
                     if (nm[0].equals("send_all")) {
                         for (ClientThread thread : threads) {
                             if (thread != null && thread != this) {
                                 thread.os.println("<" + name + "> " + nm[1]);
-
                             }
                         }
                         this.os.println("Message successfully sent");
                     }
                     else if (!names.contains(nm[0])) {
-                        this.os.println("User" + nm[0] + " doesn't exists!");
+                        this.os.println("User " + nm[0] + " doesn't exists!");
                     } else {
                         ClientThread thread2 = threads.get(names.indexOf(nm[0]));
                         thread2.os.println("<" + name + "> " + nm[1]);
@@ -92,4 +95,11 @@ class ClientThread extends Thread {
             e1.printStackTrace();
         }
    }
+
+    boolean nameExists(String name) {
+        if (names.contains(name)) {
+            return true;
+        }
+        return false;
+    }
     }

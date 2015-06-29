@@ -21,7 +21,8 @@ public class Client implements Runnable {
     private static boolean closed;
     private static final String HOST = "localhost";
 
-    public static void main(String[] args) {
+
+    public void connect() {
         System.out.println("Connected to server: " + HOST + " ," + Server.DEFAULT_PORT);
         try {
             clientSocket = new Socket(HOST, Server.DEFAULT_PORT);
@@ -32,20 +33,6 @@ public class Client implements Runnable {
             System.err.println("Unknown host " + HOST);
         } catch (IOException e) {
             System.err.println("IOException: " + e);
-        }
-
-        if (clientSocket != null && os != null && is != null) {
-            try {
-                new Thread(new Client()).start();
-                while (!closed) {
-                    os.println(inputLine.readLine().trim());
-                }
-                os.close();
-                is.close();
-                clientSocket.close();
-            } catch (IOException e) {
-                System.err.println("IOException:  " + e);
-            }
         }
     }
 
@@ -58,6 +45,24 @@ public class Client implements Runnable {
             closed = true;
         } catch (IOException e) {
             System.err.println("IOException:  " + e);
+        }
+    }
+
+    public static void main(String[] args) {
+        Client client = new Client();
+        client.connect();
+        if (clientSocket != null && os != null && is != null) {
+            try {
+                new Thread(client).start();
+                while (!closed) {
+                    os.println(inputLine.readLine().trim());
+                }
+                os.close();
+                is.close();
+                clientSocket.close();
+            } catch (IOException e) {
+                System.err.println("IOException:  " + e);
+            }
         }
     }
 }
