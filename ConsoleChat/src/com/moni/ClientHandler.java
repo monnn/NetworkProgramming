@@ -73,18 +73,18 @@ class ClientHandler extends Thread {
                 thread.os.println(name + " is online :)");
             }
         }
-        for (ClientHandler thread: threads) {
-            if (thread == this) {
-                thread = null;
-            }
-        }
-
     }
 
     public void notifyForLeaving() {
         for (ClientHandler thread: threads) {
             if (thread != null && thread != this) {
                 thread.os.println(name + " is leaving :(");
+            }
+        }
+
+        for (ClientHandler thread: threads) {
+            if (thread == this) {
+                thread = null;
             }
         }
     }
@@ -125,33 +125,22 @@ class ClientHandler extends Thread {
     }
 
     public void sendFile(OutputStream os, File file) throws Exception{
-        byte [] mybytearray  = new byte [(int)file.length()+1];
+        byte[] mybytearray = new byte [(int)file.length() + 1];
         FileInputStream fis = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(fis);
-        bis.read(mybytearray,0,mybytearray.length);
-        this.os.println("Sending file:");
-        this.os.write(mybytearray,0,mybytearray.length);
+        bis.read(mybytearray, 0, mybytearray.length);
+        this.os.println("Sending file " + file);
         os.flush();
     }
 
-    public void receiveFile(InputStream is, File file) throws Exception{
-        int filesize= (int) file.length();
-        int bytesRead;
-        int current = 0;
-        byte [] mybytearray  = new byte [filesize];
-        FileOutputStream fos = new FileOutputStream("received_" + file);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        bytesRead = is.read(mybytearray,0,mybytearray.length);
-        current = bytesRead;
-        do {
-            bytesRead =
-                    is.read(mybytearray, current, (mybytearray.length-current));
-            if(bytesRead >= 0) current += bytesRead;
-        } while(bytesRead > -1);
-        bos.write(mybytearray, 0 , current);
-        this.os.println("Received file");
-        this.os.write(mybytearray, 0 , current);
-        bos.flush();
-        bos.close();
+    public void receiveFile(InputStream is, File file) throws Exception {
+        is = new FileInputStream(file);
+        OutputStream outputStream = new FileOutputStream(new File("received_" + file));
+        int read = 0;
+        byte[] bytes = new byte[1024];
+        while ((read = is.read(bytes)) != -1) {
+            outputStream.write(bytes, 0, read);
+        }
+        this.os.println("You have just received a file: " + file);
    }
 }
