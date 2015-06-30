@@ -58,7 +58,7 @@ class ClientHandler extends Thread {
         os = new PrintStream(clientSocket.getOutputStream());
         os.println("Enter your name:");
         name = is.readLine().trim();
-        while (nameExists(name) == true)  {
+        while (nameExists(name))  {
             os.println("User with name " + name + " already exists! Enter another name:");
             name = is.readLine().trim();
         }
