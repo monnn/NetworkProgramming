@@ -1,9 +1,7 @@
 package com.moni;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.util.ArrayList;
 
 /**
@@ -18,6 +16,8 @@ class ClientHandler extends Thread {
     private Socket clientSocket;
     public static ArrayList<ClientHandler> threads = new ArrayList<ClientHandler>();
     static ArrayList<String> names = new ArrayList<String>();
+    public static InetAddress DEFAULT_IP;
+
 
         public ClientHandler(Socket clientSocket, ArrayList threads, ArrayList names) {
         this.clientSocket = clientSocket;
@@ -27,11 +27,14 @@ class ClientHandler extends Thread {
 
     public void run() {
         try {
+            DEFAULT_IP = InetAddress.getByName("127.0.0.1");
             connect();
             notifyForEntering();
             processMessages();
         } catch (IOException e1) {
             e1.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         notifyForLeaving();
         try {
@@ -86,7 +89,7 @@ class ClientHandler extends Thread {
         }
     }
 
-    public void processMessages() throws IOException {
+    public void processMessages() throws Exception {
         while (true) {
             String line = is.readLine();
             if (line.equals("bye")) {
@@ -94,6 +97,12 @@ class ClientHandler extends Thread {
             }
             if (line.equals("list")) {
                 this.os.println(names.toString());
+            } else if (line.startsWith("file")) {
+                String[] sendFileTo = line.split(":");
+                File file = new File(sendFileTo[1]);
+                ClientHandler thread1 = threads.get(names.indexOf(sendFileTo[2]));
+                this.sendFile(os, file);
+                thread1.receiveFile(is, file);
             } else if (threads != null && names != null) {
                 String[] nm = line.split(":");
                 if (nm[0].equals("send_all")) {
@@ -114,4 +123,35 @@ class ClientHandler extends Thread {
             }
         }
     }
+
+    public void sendFile(OutputStream os, File file) throws Exception{
+        byte [] mybytearray  = new byte [(int)file.length()+1];
+        FileInputStream fis = new FileInputStream(file);
+        BufferedInputStream bis = new BufferedInputStream(fis);
+        bis.read(mybytearray,0,mybytearray.length);
+        this.os.println("Sending file:");
+        this.os.write(mybytearray,0,mybytearray.length);
+        os.flush();
+    }
+
+    public void receiveFile(InputStream is, File file) throws Exception{
+        int filesize= (int) file.length();
+        int bytesRead;
+        int current = 0;
+        byte [] mybytearray  = new byte [filesize];
+        FileOutputStream fos = new FileOutputStream("received_" + file);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        bytesRead = is.read(mybytearray,0,mybytearray.length);
+        current = bytesRead;
+        do {
+            bytesRead =
+                    is.read(mybytearray, current, (mybytearray.length-current));
+            if(bytesRead >= 0) current += bytesRead;
+        } while(bytesRead > -1);
+        bos.write(mybytearray, 0 , current);
+        this.os.println("Received file");
+        this.os.write(mybytearray, 0 , current);
+        bos.flush();
+        bos.close();
+   }
 }

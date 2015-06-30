@@ -11,8 +11,8 @@ import java.util.ArrayList;
  */
 public class Server {
 
-    private static ServerSocket serverSocket;
-    private static Socket clientSocket;
+    public static ServerSocket serverSocket;
+    public static Socket clientSocket;
     public static final int DEFAULT_PORT = 9001;
     public static ArrayList<ClientHandler> threads = new ArrayList<ClientHandler>();
     public static ArrayList<String> names = new ArrayList<String>();
