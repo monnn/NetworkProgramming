@@ -1,7 +1,8 @@
 package com.moni;
 
 import java.io.*;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 
 /**
@@ -84,6 +85,8 @@ class ClientHandler extends Thread {
 
         for (ClientHandler thread: threads) {
             if (thread == this) {
+                names.remove(threads.indexOf(thread));
+                threads.remove(thread);
                 thread = null;
             }
         }
@@ -100,24 +103,34 @@ class ClientHandler extends Thread {
             } else if (line.startsWith("file")) {
                 String[] sendFileTo = line.split(":");
                 File file = new File(sendFileTo[1]);
-                ClientHandler thread1 = threads.get(names.indexOf(sendFileTo[2]));
+                if (!file.exists()) {
+                    this.os.println("File " + file + " doesn't exists!");
+                }
+                ClientHandler thread1 = null;
+                String userNameForFile = sendFileTo[2];
+                if (!names.contains(userNameForFile)) {
+                    this.os.println("User " + userNameForFile + " doesn't exists!");
+                } else {
+                    thread1 = threads.get(names.indexOf(userNameForFile));
+                }
                 this.sendFile(os, file);
                 thread1.receiveFile(is, file);
             } else if (threads != null && names != null) {
-                String[] nm = line.split(":");
-                if (nm[0].equals("send_all")) {
+                String[] sendMessageTo = line.split(":");
+                String userNameForMessage = sendMessageTo[0];
+                if (sendMessageTo[0].equals("send_all")) {
                     for (ClientHandler thread : threads) {
                         if (thread != null && thread != this) {
-                            thread.os.println("<" + name + "> " + nm[1]);
+                            thread.os.println("<" + name + "> " + sendMessageTo[1]);
                         }
                     }
                     this.os.println("Message successfully sent");
                 }
-                else if (!names.contains(nm[0])) {
-                    this.os.println("User " + nm[0] + " doesn't exists!");
+                else if (!names.contains(userNameForMessage)) {
+                    this.os.println("User " + userNameForMessage + " doesn't exists!");
                 } else {
-                    ClientHandler thread2 = threads.get(names.indexOf(nm[0]));
-                    thread2.os.println("<" + name + "> " + nm[1]);
+                    ClientHandler thread2 = threads.get(names.indexOf(userNameForMessage));
+                    thread2.os.println("<" + name + "> " + sendMessageTo[1]);
                     this.os.println("Message successfully sent");
                 }
             }
@@ -135,12 +148,16 @@ class ClientHandler extends Thread {
 
     public void receiveFile(InputStream is, File file) throws Exception {
         is = new FileInputStream(file);
-        OutputStream outputStream = new FileOutputStream(new File("received_" + file));
-        int read = 0;
-        byte[] bytes = new byte[1024];
-        while ((read = is.read(bytes)) != -1) {
-            outputStream.write(bytes, 0, read);
+        if (new File("received_" + file).exists()) {
+            this.os.println("File with name " + "received_" + file + " already exists!");
+        } else {
+            OutputStream outputStream = new FileOutputStream(new File("received_" + file));
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = is.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+            this.os.println("You have just received a file: " + file);
         }
-        this.os.println("You have just received a file: " + file);
    }
 }

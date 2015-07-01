@@ -1,10 +1,6 @@
 package com.moni;
 
-import java.io.DataInputStream;
-import java.io.PrintStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -48,7 +44,7 @@ public class Client implements Runnable {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Client client = new Client();
         client.connect();
         if (clientSocket != null && os != null && is != null) {

@@ -18,14 +18,14 @@ public class Server {
     public static ArrayList<String> names = new ArrayList<String>();
 
     public Server(int port) {
-        connect();
+        connect(port);
         acceptConnections();
     }
 
-    public  void connect() {
-        System.out.println("Server started at port: " + DEFAULT_PORT);
+    public  void connect(int port) {
+        System.out.println("Server started at port: " + port);
         try {
-            serverSocket = new ServerSocket(DEFAULT_PORT);
+            serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             System.out.println(e);
         }
